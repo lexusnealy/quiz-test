@@ -1,20 +1,31 @@
 import Quiz from '../../client/src/components/Quiz'
 
 describe('<Quiz />', () => {
+  beforeEach(() => {
+    cy.mount(<Quiz />)
+
+    // intercept
+    cy.intercept("/api/questions/random", {
+      statusCode: 200,
+      fixture: "questions.json"
+    })
+  })
+
+
   it('renders', () => {
     // see: https://on.cypress.io/mounting-react
-    cy.mount(<Quiz />)
+
   });
 
   it('should render the quiz component with the start button', () => {
-    cy.mount(<Quiz/>)
+
     cy.get('div').first().within(() => {
       cy.get('button').contains('Start Quiz').should('be.visible')
     })
   });
 
   it('renders the quiz content when the "Start Quiz" button is pressed', () => {
-    cy.mount(<Quiz/>)
+
     cy.get('button').contains('Start Quiz').should('be.visible')
     cy.get('button').contains('Start Quiz').click();
 
@@ -24,8 +35,6 @@ describe('<Quiz />', () => {
   });
 
   it('renders another question after an answer is selected', () => {
-    cy.mount(<Quiz/>)
-    
     cy.get('button').contains('Start Quiz').click();
 
     cy.get('h2').as('questionText')
@@ -35,19 +44,18 @@ describe('<Quiz />', () => {
       cy.get('.card').should('be.visible')
 
       cy.get('h2').should('be.visible').and('not.be.empty').then(($newQuestion) => {
-        expect($newQuestion.text()).to.not.equal(oldText) 
-    })
+        expect($newQuestion.text()).to.not.equal(oldText)
+      })
     })
 
     cy.get('button').should('have.length.at.least', 4)
   });
 
   it('renders the quiz complete screen after the tenth question has been answered', () => {
-    cy.mount(<Quiz/>)
-    
     cy.get('button').contains('Start Quiz').click();
-    
-    for (let i = 0; i < 10; i++) {
+
+    // loop through the number of questions in fixtures
+    for (let i = 0; i < 2; i++) {
       cy.get('button').first().click();
     }
 

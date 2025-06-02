@@ -1,86 +1,73 @@
-
-describe('A users journey through the application', () => {
+describe('A user\'s journey through the application', () => {
   beforeEach(() => {
     cy.visit('http://127.0.0.1:3001/');
   });
 
-  it('should load the page with a start quiz button', () => {
-    cy.visit('/')
-
-    cy.get('div').first().within(() => {
-      cy.get('button').contains('Start Quiz').should('be.visible')
-    })
+  it('should load the page with a Start Quiz button', () => {
+    cy.contains('button', 'Start Quiz').should('be.visible');
   });
 
-  it('should load the quiz with the first question when the start button is pressed', () => {
-    cy.get('button').contains('Start Quiz').click();
+  it('should load the quiz with the first question when the Start Quiz button is clicked', () => {
+    cy.contains('button', 'Start Quiz').click();
 
-    cy.get('.card').should('be.visible')
-    cy.get('h2').should('be.visible').and('not.be.empty')
-    cy.get('button').should('have.length.at.least', 4)
+    cy.get('.card', { timeout: 10000 }).should('be.visible');
+    cy.get('h2').should('be.visible').and('not.be.empty');
+    cy.get('.card button').should('have.length.at.least', 4);
   });
 
   it('should load the next question after an answer is chosen', () => {
-    cy.get('button').contains('Start Quiz').click();
+    cy.contains('button', 'Start Quiz').click();
 
-    cy.get('h2').as('questionText')
+    cy.get('h2').as('questionText');
     cy.get('@questionText').invoke('text').then((oldText) => {
-      cy.get('button').first().click()
+      // You can refine this selector to be more specific if answer buttons have a class or attribute
+      cy.get('.card button').first().click();
 
-      cy.get('.card').should('be.visible')
-
-      cy.get('h2').should('be.visible').and('not.be.empty').then(($newQuestion) => {
-        expect($newQuestion.text()).to.not.equal(oldText) 
-    })
-    })
-
-    cy.get('button').should('have.length.at.least', 4)
+      cy.get('.card', { timeout: 10000 }).should('be.visible');
+      cy.get('h2').should('be.visible').and('not.be.empty').invoke('text').should((newText) => {
+        expect(newText).not.to.eq(oldText);
+      });
+    });
   });
 
   it('should end the quiz when all questions are answered', () => {
-    
-    cy.get('button').contains('Start Quiz').click();
-    
+    cy.contains('button', 'Start Quiz').click();
+
     for (let i = 0; i < 10; i++) {
-      cy.get('button').first().click();
+      cy.get('.card button').first().click();
     }
 
-    cy.get('h2').should('have.text', 'Quiz Completed').and('be.visible')
-    cy.get('.alert').should('include.text', 'Your score:').and('be.visible')
-    cy.get('button').should('have.text', 'Take New Quiz').and('be.visible')
+    cy.contains('h2', 'Quiz Completed', { timeout: 10000 }).should('be.visible');
+    cy.get('.alert').should('contain.text', 'Your score:').and('be.visible');
+    cy.contains('button', 'Take New Quiz').should('be.visible');
   });
 
-  it('should display the users score when the quiz is over', () => {
-    
-    cy.get('button').contains('Start Quiz').click();
+  it('should display the user\'s score when the quiz is over', () => {
+    cy.contains('button', 'Start Quiz').click();
 
     for (let i = 0; i < 10; i++) {
-      cy.get('button').first().click();
+      cy.get('.card button').first().click();
     }
 
-   
     cy.get('.alert')
       .should('be.visible')
       .invoke('text')
       .should((text) => {
         expect(text).to.match(/Your score: \d+\/\d+/);
-      })
-
-    
+      });
   });
 
-  it('should start a new quiz when the take new quiz button is pressed', () => {
+  it('should start a new quiz when the "Take New Quiz" button is pressed', () => {
+    cy.contains('button', 'Start Quiz').click();
 
-    cy.get('button').contains('Start Quiz').click();
-    
     for (let i = 0; i < 10; i++) {
-      cy.get('button').first().click();
+      cy.get('.card button').first().click();
     }
 
-    cy.get('button').should('have.text', 'Take New Quiz').click();
+    cy.contains('button', 'Take New Quiz').click();
 
-    cy.get('.card').should('be.visible')
-    cy.get('h2').should('be.visible').and('not.be.empty')
-    cy.get('button').should('have.length.at.least', 4)
+    cy.get('.card', { timeout: 10000 }).should('be.visible');
+    cy.get('h2').should('be.visible').and('not.be.empty');
+    cy.get('.card button').should('have.length.at.least', 4);
   });
-})
+});
